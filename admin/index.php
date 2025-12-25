@@ -50,8 +50,8 @@ $revenueResult = mysqli_fetch_assoc(mysqli_query($conn, "
 "));
 $monthlyRevenue = (float)($revenueResult['revenue'] ?? 0);
 
-// Pending posts for review
-$pendingPosts = mysqli_query($conn, "
+// Recent approved posts (instead of pending)
+$recentPosts = mysqli_query($conn, "
     SELECT p.*, u.full_name as landlord_name, d.district_name, pr.province_name,
            pk.package_name, pk.highlight_color
     FROM posts p
@@ -59,9 +59,9 @@ $pendingPosts = mysqli_query($conn, "
     JOIN districts d ON d.district_id = p.district_id
     JOIN provinces pr ON pr.province_id = d.province_id
     JOIN packages pk ON pk.package_id = p.package_id
-    WHERE p.status = 'PENDING'
+    WHERE p.status = 'APPROVED'
     ORDER BY p.created_at DESC
-    LIMIT 10
+    LIMIT 5
 ");
 
 // Recent transactions
@@ -171,17 +171,17 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="row">
         
-        <!-- Pending Posts Table -->
+        <!-- Recent Approved Posts Table -->
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-clock me-2"></i>Tin chờ duyệt</h5>
-                    <a href="<?= ADMIN_BASE_PATH ?>/modules/posts/pending.php" class="btn btn-sm btn-outline-primary">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-check me-2"></i>Tin đăng mới nhất</h5>
+                    <a href="<?= ADMIN_BASE_PATH ?>/modules/posts/index.php" class="btn btn-sm btn-outline-primary">
                         Xem tất cả
                     </a>
                 </div>
                 <div class="card-body">
-                    <?php if ($pendingPosts && mysqli_num_rows($pendingPosts) > 0): ?>
+                    <?php if ($recentPosts instanceof mysqli_result && mysqli_num_rows($recentPosts) > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
@@ -194,7 +194,7 @@ require_once __DIR__ . '/includes/header.php';
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while ($post = mysqli_fetch_assoc($pendingPosts)): ?>
+                                    <?php while ($post = mysqli_fetch_assoc($recentPosts)): ?>
                                         <tr>
                                             <td>
                                                 <strong><?= htmlspecialchars(mb_substr($post['title'], 0, 40)) ?>...</strong>
@@ -209,8 +209,8 @@ require_once __DIR__ . '/includes/header.php';
                                             </td>
                                             <td><?= number_format((float)$post['price'], 0, ',', '.') ?>đ</td>
                                             <td>
-                                                <a href="<?= ADMIN_BASE_PATH ?>/modules/posts/review.php?id=<?= $post['post_id'] ?>" 
-                                                   class="btn btn-sm btn-primary">Duyệt</a>
+                                                <a href="<?= ADMIN_BASE_PATH ?>/modules/posts/view.php?id=<?= $post['post_id'] ?>" 
+                                                   class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
@@ -219,8 +219,8 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                     <?php else: ?>
                         <p class="text-center text-muted py-4">
-                            <i class="bi bi-check-circle fs-1 d-block mb-2"></i>
-                            Không có tin chờ duyệt
+                            <i class="bi bi-file-earmark-x fs-1 d-block mb-2"></i>
+                            Chưa có tin đăng nào
                         </p>
                     <?php endif; ?>
                 </div>
@@ -234,7 +234,7 @@ require_once __DIR__ . '/includes/header.php';
                     <h5 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Giao dịch gần đây</h5>
                 </div>
                 <div class="card-body">
-                    <?php if ($recentTransactions && mysqli_num_rows($recentTransactions) > 0): ?>
+                    <?php if ($recentTransactions instanceof mysqli_result && mysqli_num_rows($recentTransactions) > 0): ?>
                         <ul class="list-group list-group-flush">
                             <?php while ($trans = mysqli_fetch_assoc($recentTransactions)): ?>
                                 <li class="list-group-item px-0">
@@ -251,7 +251,9 @@ require_once __DIR__ . '/includes/header.php';
                                                     'REFUND' => 'Hoàn tiền',
                                                     'POST' => 'Đăng tin',
                                                     'DEPOSIT' => 'Nạp tiền',
-                                                    'POST_RESUBMIT' => 'Đăng lại tin'
+                                                    'POST_RESUBMIT' => 'Đăng lại tin',
+                                                    'WITHDRAWAL' => 'Rút tiền',
+                                                    'DEPOSIT_RECEIVED' => 'Cọc thuê phòng'
                                                 ];
                                                 echo $types[$trans['transaction_type']] ?? $trans['transaction_type'];
                                                 ?>

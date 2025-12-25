@@ -237,10 +237,22 @@ require_once __DIR__ . '/../../../includes/header.php';
                     <hr>
                     
                     <div class="row">
+                        <?php 
+                        $rentalType = $room['rental_type'] ?? 'MONTHLY';
+                        $dailyPrice = (float)($room['daily_price'] ?? 0);
+                        $baseRent = (float)($room['base_rent'] ?? 0);
+                        ?>
+                        <?php if ($rentalType === 'DAILY'): ?>
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Giá thuê</label>
-                            <p class="mb-0 fs-4 fw-bold text-danger"><?= number_format((float)$room['base_rent']) ?>đ<small class="text-muted">/tháng</small></p>
+                            <label class="text-muted small">Giá thuê ngày</label>
+                            <p class="mb-0 fs-4 fw-bold text-primary"><?= number_format($dailyPrice) ?>đ<small class="text-muted">/ngày</small></p>
                         </div>
+                        <?php else: ?>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Giá thuê tháng</label>
+                            <p class="mb-0 fs-4 fw-bold text-danger"><?= number_format($baseRent) ?>đ<small class="text-muted">/tháng</small></p>
+                        </div>
+                        <?php endif; ?>
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Tiền đặt cọc</label>
                             <p class="mb-0 fw-bold"><?= $room['deposit'] ? number_format((float)$room['deposit']) . 'đ' : 'Không yêu cầu' ?></p>

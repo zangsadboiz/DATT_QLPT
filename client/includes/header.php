@@ -1,7 +1,7 @@
 <?php
 // client/includes/header.php - Sử dụng template Hotelier
 $base = '/quanlyphongtro/client/index.php';
-$hotelier = '/quanlyphongtro/hotelier-1.0.0';
+$hotelier = '/quanlyphongtro/hotelier-1.0.0/hotelier-1.0.0';
 
 $userId   = (int)($_SESSION['user_id'] ?? 0);
 $roleName = $_SESSION['role_name'] ?? '';
